@@ -1,0 +1,5 @@
+- name: Set Name
+  set_fact: instance_id="{{ ansible_facts['nodename'] }}"
+
+- name: Set Ip Address
+  set_fact: local_ip_address="{{ ansible_default_ipv4.address }}"

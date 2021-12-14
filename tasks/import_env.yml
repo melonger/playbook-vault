@@ -11,6 +11,10 @@
   import_tasks: aws.yml
   when: cloud_env == "aws"
 
+- name: Local ENV Pull
+  import_tasks: local.yml
+  when: cloud_env == "local"
+
 - name: register files
   import_tasks: register-files.yml
 
