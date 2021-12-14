@@ -1,0 +1,28 @@
+- debug: msg="START - vault.yml"
+
+- name: Show Vault Token
+  debug:
+    verbosity: "{{ debug_verbosity }}"
+    var: vault_https_enabled
+
+- name: Configure Vault Configuration
+  template:
+    src: etc/vault.d/vault.hcl.j2
+    dest: "{{ vault_config_path }}/vault.hcl"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: 0660
+  register: vault_config
+
+
+- name: Restart Vault
+  service: name=vault state=restarted
+  when: vault_config.changed
+
+- name: Wait and check for Vault port
+  wait_for:
+    port: "{{ vault_api_port }}"
+    delay: 6
+  when: vault_config.changed
+
+- debug: msg="END - vault.yml"

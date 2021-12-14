@@ -1,0 +1,112 @@
+ui           = true
+plugin_directory = "{{ vault_config_path }}/plugin"
+api_addr     = "{{ vault_api_protocol }}://{{ vault_api_address }}:{{ vault_api_port }}"
+cluster_addr = "{{ vault_api_protocol }}://{{ ansible_facts['nodename'] }}:{{ vault_cluster_port }}"
+
+{% if vault_license_secret_name != "demo" -%}
+license_path = "{{ vault_config_path }}/license.hclic"
+{% endif -%}
+
+{% if vault_integrated_storage -%}
+disable_mlock = true
+
+storage "raft" {
+  path = "{{ vault_data_path }}"
+  node_id = "{{ ansible_facts['nodename'] }}"
+
+  retry_join {
+  {% if cloud_env == "aws" -%}
+    auto_join = "provider=aws tag_key={{ vault_join_tag_key }} tag_value={{ consul_join_tag_value }} region={{ vault_join_region }} addr_type=private_v4"
+  {% elif cloud_env == "azure" -%}
+    "provider=azure resource_group={{ resource_group }} vm_scale_set={{ scale_set_name }} tenant_id={{ az_tenant_id }} client_id={{ az_client_id }} subscription_id={{ az_subscription_id }} secret_access_key={{ az_secret }}"
+  {% endif -%}
+  auto_join_scheme = "{{ vault_api_protocol }}"
+  {% if vault_https_enabled == true -%}
+  leader_ca_cert_file   = "{{ vault_config_path }}/tls/vault_tls_ca_bundle"
+  leader_client_cert_file = "{{ vault_config_path }}/tls/vault_server_tls_cert"
+  leader_client_key_file  = "{{ vault_config_path }}/tls/vault_server_tls_key"
+  leader_tls_servername = "{{ ansible_facts['nodename'] }}"
+  {% endif %}
+  }
+{% else -%}
+storage "consul" {
+{% if consul_https_enabled == true -%}
+  address = "127.0.0.1:{{ consul_https_port }}"
+  scheme  = "https"
+  tls_ca_file = "{{ consul_config_path }}/tls/consul_tls_ca_bundle"
+{% else -%}
+  address = "127.0.0.1:{{ consul_http_port }}"
+{% endif -%}
+  path    = "/vault"
+  token   = "{{ vault_token }}"
+{% endif -%}
+}
+
+listener "tcp" {
+  address     = "0.0.0.0:{{ vault_api_port }}"
+  scheme  = "{{ vault_api_protocol }}"
+{% if vault_https_enabled == true -%}
+  tls_ca_file   = "{{ vault_config_path }}/tls/vault_tls_ca_bundle"
+  tls_cert_file = "{{ vault_config_path }}/tls/vault_server_tls_cert"
+  tls_key_file  = "{{ vault_config_path }}/tls/vault_server_tls_key"
+{% else %}
+  tls_disable = true
+{% endif %}
+}
+
+{% if vault_telemtry_enabled == true -%}
+telemetry {
+  statsite_address = "127.0.0.1:8125"
+  disable_hostname = true
+}
+{% endif -%}
+
+{% if cloud_unseal == true or hsm_unseal == true -%}
+{% if cloud_env == 'aws' -%}
+seal "awskms" {
+  region     = "{{ location }}"
+  kms_key_id = "{{ vault_kms_key_id }}"
+{% if hsm_unseal == true %}
+  disabled = true
+{% endif %}
+{% elif cloud_env == "azure" -%}
+seal "azurekms" {
+  location     = "{{ location }}"
+  kms_key_id = "{{ vault_kms_key_id }}"
+{% if hsm_unseal == true %}
+  disabled = true
+{% endif %}
+{% endif -%}
+}
+{% endif -%}
+
+{% if hsm_unseal == true -%}
+seal "pkcs11" {
+  lib = "{{ hsm_binary }}"
+  slot = "{{ hsm_slot }}"
+  pin = "{{ hsm_pin }}"
+  key_label = "{{ hsm_key_label }}"
+  hmac_key_label = "{{ hsm_hmac_key_label }}"
+  generate_key = "{{ hsm_generate_key }}"
+}
+{% endif -%}
+
+{% if transit_unseal == true -%}
+seal "transit" {
+  address            = "{{ transit_address }}"
+  token              = "{{ transit_token }}"
+  disable_renewal    = "false"
+
+  // Key configuration
+  key_name           = "{{ transit_key_name }}"
+  mount_path         = "{{ transit_mount_path }}"
+  namespace          = "{{ transit_namespace }}"
+
+  {# // TLS Configuration
+  tls_ca_cert        = "/etc/vault/ca_cert.pem"
+  tls_client_cert    = "/etc/vault/client_cert.pem"
+  tls_client_key     = "/etc/vault/ca_cert.pem"
+  tls_server_name    = "vault" #}
+  tls_skip_verify    = "{{ transit_tls_skip_verify }}"
+}
+{% endif -%}

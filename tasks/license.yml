@@ -1,0 +1,32 @@
+- debug: msg="START - license.yml"
+
+- name: Write License to Vault
+  uri:
+    method: PUT
+    url: "{{ vault_api_protocol }}://127.0.0.1:{{ vault_api_port }}/v1/sys/license"
+    validate_certs: no
+    body_format: json
+    return_content: yes
+    status_code: 204
+    body: |
+      {
+        "text": "{{ vault_enterprise_license }}"
+      }
+    headers:
+      X-Vault-Token: "{{ admin_token }}"
+  register: license_vault_write
+  run_once: yes
+
+- name: Show Contents
+  debug:
+    var: license_vault_write
+
+- name: Get Vault Licensing Change
+  debug:
+    var: license_vault_write.changed
+
+- name: Get Vault Licensing Failure (True is bad.)
+  debug:
+    var: license_vault_write.failed
+
+- debug: msg="END - license.yml"

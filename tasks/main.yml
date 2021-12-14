@@ -1,0 +1,24 @@
+- name: Perform Common Tasks
+  import_tasks: common.yml
+
+- name: Configure Vault
+  import_tasks: vault.yml
+
+# - name: Initialize Vault
+#   import_tasks: initialize.yml
+#   when:
+#     - vault_initialize == true
+#     - bootstrap_file.stat.exists == false
+#
+# - name: Determine the leader
+#   import_tasks: leader.yml
+#   when:
+#     # - vault_initialize == true
+#     - vault_license == true
+
+- name: License Vault
+  import_tasks: license_vault.yml
+  when:
+    # - vault_initialize == true
+    - vault_license == true
+    # - bootstrap_file.stat.exists == false

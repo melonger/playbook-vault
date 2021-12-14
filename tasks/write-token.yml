@@ -1,0 +1,34 @@
+- name: Create protected directory for ACL tokens
+  file:
+    path: "{{ consul_config_path }}/tokens"
+    state: directory
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0700
+
+- name: Archive Client agent token
+  copy:
+    content: "{{ client_agent_token.stdout }}"
+    dest: "{{ consul_config_path }}/tokens/agent"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0640
+  when: agent_token_file.stat.exists == false
+
+- name: Archive Vault token
+  copy:
+    content: "{{ vault_token.stdout }}"
+    dest: "{{ consul_config_path }}/tokens/vault"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0640
+  when: vault_token_file.stat.exists == false
+
+- name: Archive default token
+  copy:
+    content: "{{ default_token.stdout }}"
+    dest: "{{ consul_config_path }}/tokens/default"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: 0640
+  when: default_token_file.stat.exists == false

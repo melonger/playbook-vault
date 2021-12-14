@@ -1,0 +1,6 @@
+service vault stop
+rm -rf ~/.ansible/
+rm -rf {{ vault_config_path }}/*
+{% if vault_integrated_storage %}
+rm -rf {{ vault_data_path }}/*
+{% endif -%}

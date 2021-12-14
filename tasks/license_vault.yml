@@ -1,0 +1,81 @@
+- name: Get Leader Status
+  shell: |
+    . /etc/profile.d/99-consul-env.sh
+    vault status | grep "Initialized" | awk '{print $2}'
+  register: consul_leader_bool
+
+- name: Write License to Vault
+  uri:
+    method: GET
+    url: "{{ vault_api_protocol }}://127.0.0.1:{{ vault_api_port }}/v1/sys/license"
+    validate_certs: no
+    return_content: yes
+    headers:
+      X-Vault-Token: "{{ admin_token }}"
+  register: license_vault_get
+  run_once: yes
+
+- name: Set Vault License Information
+  set_fact: license_vault_info="{{ license_vault_get.json.data.license_id }}"
+
+- name: Show Vault License Information
+  debug:
+    var: license_vault_info
+
+# - name: Get Leader Address
+#   uri:
+#     method: GET
+#     url: "{{ vault_api_protocol }}://127.0.0.1:{{ vault_api_port }}/v1/sys/leader"
+#     validate_certs: no
+#     return_content: yes
+#     body_format: json
+#     headers:
+#       X-Vault-Token: "{{ admin_token }}"
+#   register: vault_leader_address
+#   until: vault_leader_address.json != ""
+#   retries: 120
+#   delay: 2
+#   ignore_errors: yes
+#
+# - name: Set Vault Leader Address
+#   set_fact: vault_leader_address="{{ vault_leader_address.json.is_self }}"
+#
+# - name: Show Vault Leader Address - leader_address.yml
+#   debug:
+#     var: vault_leader_address
+
+- name: Write License to Vault
+  uri:
+    method: PUT
+    url: "{{ vault_api_protocol }}://127.0.0.1:{{ vault_api_port }}/v1/sys/license"
+    validate_certs: no
+    body_format: json
+    return_content: yes
+    status_code: 204
+    follow_redirects: yes
+    body: |
+      {
+        "text": "{{ vault_enterprise_license }}"
+      }
+    headers:
+      X-Vault-Token: "{{ admin_token }}"
+  register: license_vault_write
+  run_once: yes
+  # when: license_vault_info == "temporary"
+  # when: vault_leader_address == true
+
+- name: Show Contents
+  debug:
+    var: license_vault_write
+  # when: license_vault_info == "temporary"
+  # when: vault_leader_address == true
+
+- name: Get Vault Licensing Change
+  debug:
+    var: license_vault_write.changed
+  # when: vault_leader_address == true
+
+- name: Get Vault Licensing Failure (True is bad.)
+  debug:
+    var: license_vault_write.failed
+  # when: vault_leader_address == true

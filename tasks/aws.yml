@@ -1,0 +1,55 @@
+- name: Gather instance metadata
+  ec2_metadata_facts:
+
+- name: Set Location
+  set_fact: location="{{ ansible_ec2_placement_region }}"
+
+- name: Set Name
+  set_fact: instance_id="{{ ansible_ec2_instance_id }}"
+
+- name: Set Ip Address
+  set_fact: local_ip_address="{{ ansible_ec2_local_ipv4 }}"
+
+- name: Fetch Vault License File from parameter store
+  shell: "aws ssm get-parameters --output json --region {{ location }} --with-decryption --names /{{ namespace }}/{{ vault_license_secret_name }} | jq -r '.Parameters[] | .Value'"
+  register: vault_license
+  when:
+    - stat_vault_license.stat.exists == false
+    - vault_license_secret_name != "demo"
+
+- name: Archive license file
+  copy:
+    content: "{{ vault_license.stdout }}"
+    dest: "{{ vault_config_path }}/license.hclic"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_group }}"
+    mode: 0400
+  when:
+    - stat_vault_license.stat.exists == false
+    - vault_license_secret_name != "demo"
+
+# Vault Certificates
+- name: Fetch Vault CA certificate bundle from parameter store
+  shell: "aws ssm get-parameters --output json --region {{ location }} --with-decryption --names /{{ namespace }}/vault-tls-ca-bundle | jq -r '.Parameters[] | .Value'"
+  register: vault_tls_ca_bundle
+  when:
+    - stat_vault_tls_ca_bundle.stat.exists == false
+    - vault_https_enabled | bool
+
+- name: Fetch Vault server certificate from parameter store
+  shell: "aws ssm get-parameters --output json --region {{ location }} --with-decryption --names /{{ namespace }}/vault-server-tls-cert | jq -r '.Parameters[] | .Value'"
+  register: vault_server_tls_cert
+  when:
+    - stat_vault_server_tls_cert.stat.exists == false
+    - vault_https_enabled | bool
+
+- name: Fetch Vault server certificate key from parameter store
+  shell: "aws ssm get-parameters --output json --region {{ location }} --with-decryption --names /{{ namespace }}/vault-server-tls-key | jq -r '.Parameters[] | .Value'"
+  register: vault_server_tls_key
+  when:
+    - stat_vault_server_tls_key.stat.exists == false
+    - vault_https_enabled | bool
+
+- name: Copying Certificates
+  import_tasks: write-certs.yml
+  when: vault_https_enabled | bool

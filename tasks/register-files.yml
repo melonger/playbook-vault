@@ -1,0 +1,61 @@
+- name: Check for agent token on filesystem
+  stat: path="{{ consul_config_path }}/tokens/agent"
+  register: agent_token_file
+  ignore_errors: yes
+
+- name: Check for vault token on filesystem
+  stat: path="{{ consul_config_path }}/tokens/vault"
+  register: vault_token_file
+  ignore_errors: yes
+
+- name: Check for default token on filesystem
+  stat: path="{{ consul_config_path }}/tokens/default"
+  register: default_token_file
+  ignore_errors: yes
+
+# Consul Certs
+- name: Check for consul_tls_ca_bundle
+  stat: path="{{ consul_config_path }}/tls/consul_tls_ca_bundle"
+  register: stat_consul_tls_ca_bundle
+  ignore_errors: yes
+
+- name: Check for consul_client_tls_cert
+  local_action: stat path="{{ consul_config_path }}/tls/consul_client_tls_cert"
+  register: stat_consul_client_tls_cert
+  ignore_errors: yes
+
+- name: Check for consul_client_tls_key
+  local_action: stat path="{{ consul_config_path }}/tls/consul_client_tls_key"
+  register: stat_consul_client_tls_key
+  ignore_errors: yes
+
+- name: Check for vault license on filesystem
+  stat: path="{{ vault_config_path }}/license.hclic"
+  register: stat_vault_license
+  ignore_errors: yes
+
+# Vault Certs
+- name: Check for vault_tls_ca_bundle
+  stat: path="{{ vault_config_path }}/tls/vault_tls_ca_bundle"
+  register: stat_vault_tls_ca_bundle
+  ignore_errors: yes
+
+- name: Check for vault_server_tls_cert
+  local_action: stat path="{{ vault_config_path }}/tls/vault_server_tls_cert"
+  register: stat_vault_server_tls_cert
+  ignore_errors: yes
+
+- name: Check for vault_server_tls_key
+  local_action: stat path="{{ vault_config_path }}/tls/vault_server_tls_key"
+  register: stat_vault_server_tls_key
+  ignore_errors: yes
+
+- name: Check to see if cluster is bootstrapped
+  stat: path="{{ consul_config_path }}/bootstrapped"
+  register: bootstrap_file
+  ignore_errors: yes
+
+- name: Check to see if cluster is bootstrapped
+  stat: path="{{ vault_config_path }}/unsealed"
+  register: vault_unsealed
+  ignore_errors: yes

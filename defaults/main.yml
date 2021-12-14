@@ -1,0 +1,65 @@
+vault_datacenter: dc1
+vault_api_port: 8200
+vault_api_address: primary.vault.local
+vault_cluster_port: 8201
+vault_telemtry_enabled: 0
+vault_unseal: false
+vault_https_enabled: 0
+vault_license_secret_name: demo
+cloud_unseal: true
+
+vault_integrated_storage: true
+vault_join_region: ca-central-1
+consul_join_tag_value: vault
+vault_join_tag_key: auto_join
+namespace: client001
+
+vault_config_path: /etc/vault.d
+vault_data_path: /var/lib/vault/data
+vault_user: vault
+vault_group: vault
+
+vault_initialize: false
+vault_license: false
+vault_enterprise_license: KFJSDKJPJWSEKMKSDDFIFAKEFAKEFAKE
+admin_token: FAKEFAKEFAKE
+vault_recovery_shares: 5
+vault_recovery_threshold: 3
+
+hsm_unseal: false
+hsm_slot: "0"
+hsm_pin: "1234"
+hsm_key_label: "hashi_vault"
+hsm_hmac_key_label: "hmac_hashi_vault"
+hsm_generate_key: "true"
+hsm_binary: "/usr/lib64/libsofthsm2.so"
+
+transit_unseal: false
+transit_address: http://localhost:8200
+transit_token: s.Qf1s5zigZ4OX6akYjQXJC1jY
+transit_key_name: transit_key_name
+transit_mount_path: "transit/"
+transit_namespace: "ns1/"
+transit_tls_skip_verify: "false"
+
+vault_kms_key_id: SAMPLE
+location:
+
+debug_verbosity: 0
+
+consul_default_policy_name: default-agent
+consul_agent_policy_name: consul-agent
+consul_application_policy_name: vault-agent
+consul_snapshot_policy_name: snapshot-agent
+
+tempdir: /tmp
+
+consul_config_path: /etc/consul.d
+consul_data_path: /var/lib/consul
+consul_log_path: /var/log/consul
+consul_user: consul
+consul_group: consul
+consul_agent_is_server: 0
+consul_https_enabled: 0
+
+cloud_env: aws
