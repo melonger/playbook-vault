@@ -16,13 +16,6 @@
     remote_src: yes
   when: remote_install == false
 
-- name: "Copy Vault ansible directory"
-  synchronize:
-    src: vault/
-    dest: "/etc/ansible/"
-    recursive: yes
-    copy_links: yes
-
 - name: Setup autocompletion
   copy:
     content: complete -C "/usr/local/bin/vault" "vault"
