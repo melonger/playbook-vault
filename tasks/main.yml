@@ -10,6 +10,4 @@
 - name: License Vault
   import_tasks: license_vault.yml
   when:
-    # - vault_initialize == true
     - vault_license == true
-    # - bootstrap_file.stat.exists == false

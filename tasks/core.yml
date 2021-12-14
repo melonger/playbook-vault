@@ -54,14 +54,12 @@
 
 - name: Create configuration and TLS directories
   file:
-    path: "{{ item }}"
+    path: "{{ vault_config_path }}/tls"
     state: directory
+    recurse: true
     owner: "{{ vault_user }}"
     group: "{{ vault_user }}"
     mode: '0770'
-  with_items:
-    - /etc/vault.d
-    - /etc/vault.d/tls
 
 - name: Adding user consul_group
   user:
