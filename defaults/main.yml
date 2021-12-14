@@ -66,3 +66,5 @@ consul_agent_is_server: 0
 consul_https_enabled: 0
 
 cloud_env: aws
+
+test_core: false
