@@ -3,7 +3,7 @@ plugin_directory = "{{ vault_config_path }}/plugin"
 api_addr     = "{{ vault_api_protocol }}://{{ vault_api_address }}:{{ vault_api_port }}"
 cluster_addr = "{{ vault_api_protocol }}://{{ ansible_facts['nodename'] }}:{{ vault_cluster_port }}"
 
-{% if vault_license_secret_name != "demo" -%}
+{% if vault_license -%}
 license_path = "{{ vault_config_path }}/license.hclic"
 {% endif -%}
 
@@ -19,6 +19,8 @@ storage "raft" {
     auto_join = "provider=aws tag_key={{ vault_join_tag_key }} tag_value={{ consul_join_tag_value }} region={{ vault_join_region }} addr_type=private_v4"
   {% elif cloud_env == "azure" -%}
     "provider=azure resource_group={{ resource_group }} vm_scale_set={{ scale_set_name }} tenant_id={{ az_tenant_id }} client_id={{ az_client_id }} subscription_id={{ az_subscription_id }} secret_access_key={{ az_secret }}"
+  {% else -%}
+    leader_api_addr = "{{ vault_api_protocol }}://127.0.0.1:{{ vault_api_port }}"
   {% endif -%}
   auto_join_scheme = "{{ vault_api_protocol }}"
   {% if vault_https_enabled == true -%}
