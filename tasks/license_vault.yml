@@ -1,5 +1,7 @@
 - name: Write License file
   copy:
     dest: "{{ vault_config_path }}/license.hclic"
+    owner: "{{ vault_user }}"
+    group: "{{ vault_user }}"
     mode: 0750
     content: "{{ vault_enterprise_license }}"
