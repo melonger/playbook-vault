@@ -1,4 +1,7 @@
+remote_install: true
+vault_version: 1.7.4
 vault_datacenter: dc1
+vault_integrated: true
 vault_api_port: 8200
 vault_api_address: primary.vault.local
 vault_cluster_port: 8201

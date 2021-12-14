@@ -1,0 +1,82 @@
+- name: Unarchive vault
+  unarchive:
+    src: "/tmp/vault_{{ vault_version }}+ent_linux_amd64.zip"
+    dest: /usr/local/bin
+    owner: root
+    group: root
+    remote_src: yes
+  when: remote_install
+
+- name: Unarchive vault
+  unarchive:
+    src: "/tmp/vault_{{ vault_version }}+ent_linux_amd64.zip"
+    dest: /usr/local/bin
+    owner: root
+    group: root
+    remote_src: yes
+  when: ! remote_install
+
+- name: "Copy Vault ansible directory"
+  synchronize:
+    src: vault/
+    dest: "/etc/ansible/"
+    recursive: yes
+    copy_links: yes
+
+- name: Setup autocompletion
+  copy:
+    content: complete -C "/usr/local/bin/vault" "vault"
+    dest: "/etc/profile.d/99-vault-completion.sh"
+    mode: 0644
+
+- name: Ensure group "hashi" exists
+  group:
+    name: hashi
+    state: present
+
+- name: Create vault user
+  user:
+    name: "{{ vault_user }}"
+    system: yes
+    shell: /bin/false
+    home: "{{ vault_config_path }}"
+    createhome: no
+    append: yes
+
+- name: Create vault data directory
+  file:
+    path: "{{ vault_data_path }}"
+    state: directory
+    recurse: true
+    owner: "{{ vault_user }}"
+    group: "{{ vault_user }}"
+    mode: '0770'
+
+- name: Create configuration and TLS directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ vault_user }}"
+    group: "{{ vault_user }}"
+    mode: '0770'
+  with_items:
+    - /etc/vault.d
+    - /etc/vault.d/tls
+
+- name: Adding user consul_group
+  user:
+    name: "{{ vault_user }}"
+    groups: "{{ consul_group }}"
+    append: yes
+  when: vault_integrated == false
+
+- name: Create symbolic link
+  file:
+    src: "/usr/local/bin/vault"
+    dest: "/bin/vault"
+    state: link
+
+- name: Install systemd unit
+  template:
+    src: lib/systemd/system/vault.service.j2
+    dest: /lib/systemd/system/vault.service
