@@ -2,4 +2,4 @@
   copy:
     dest: "{{ vault_config_path }}/license.hclic"
     mode: 0750
-    content: {{ vault_enterprise_license }}
+    content: | {{ vault_enterprise_license }}
