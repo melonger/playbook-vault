@@ -1,6 +1,6 @@
 - name: Unarchive vault
   unarchive:
-    src: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_arm64.zip"
+    src: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
     dest: /usr/local/bin
     owner: root
     group: root
@@ -14,7 +14,7 @@
     owner: root
     group: root
     remote_src: yes
-  when: ! remote_install
+  when: remote_install == false
 
 - name: "Copy Vault ansible directory"
   synchronize:
