@@ -14,9 +14,10 @@
     mode: 0660
   register: vault_config
 
-
 - name: Restart Vault
-  service: name=vault state=restarted
+  service:
+    name: vault
+    state: restarted
   when: vault_config.changed
 
 - name: Wait and check for Vault port
